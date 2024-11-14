@@ -1,0 +1,4 @@
+data/annotations/*
+data/zip/*
+data/vqa_raw_test.json
+data/vqa_raw_train.json
