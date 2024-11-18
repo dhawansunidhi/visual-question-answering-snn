@@ -48,15 +48,15 @@ def build_vocab_question(imgs, params):
     for img in imgs:
         for w in img['processed_tokens']:
             counts[w] = counts.get(w, 0) + 1
-    cw = sorted([(count,w) for w,count in counts.iteritems()], reverse=True)
+    cw = sorted([(count,w) for w,count in counts.items()], reverse=True)
     print('top words and their counts:')
     print('\n'.join(map(str,cw[:20])))
 
     # print(some stats
-    total_words = sum(counts.itervalues())
+    total_words = sum(counts.values())
     print('total words:', total_words)
-    bad_words = [w for w,n in counts.iteritems() if n <= count_thr]
-    vocab = [w for w,n in counts.iteritems() if n > count_thr]
+    bad_words = [w for w,n in counts.items() if n <= count_thr]
+    vocab = [w for w,n in counts.items() if n > count_thr]
     bad_count = sum(counts[w] for w in bad_words)
     print('number of bad words: %d/%d = %.2f%%' % (len(bad_words), len(counts), len(bad_words)*100.0/len(counts)))
     print('number of words in vocab would be %d' % (len(vocab), ))
@@ -90,7 +90,7 @@ def get_top_answers(imgs, params):
         ans = img['ans'] 
         counts[ans] = counts.get(ans, 0) + 1
 
-    cw = sorted([(count,w) for w,count in counts.iteritems()], reverse=True)
+    cw = sorted([(count,w) for w,count in counts.items()], reverse=True)
     print('top answer and their counts:')    
     print('\n'.join(map(str,cw[:20])))
     
@@ -122,12 +122,13 @@ def encode_question(imgs, params, wtoi):
 
 def encode_answer(imgs, atoi):
     N = len(imgs)
-    ans_arrays = np.zeros(N, dtype='uint32')
+    ans_arrays = np.zeros(N, dtype='int32')
 
     for i, img in enumerate(imgs):
         ans_arrays[i] = atoi.get(img['ans'], -1) # -1 means wrong answer.
 
     return ans_arrays
+
 
 def encode_mc_answer(imgs, atoi):
     N = len(imgs)
@@ -155,7 +156,7 @@ def get_unqiue_img(imgs):
     for img in imgs:
         count_img[img['img_path']] = count_img.get(img['img_path'], 0) + 1
 
-    unique_img = [w for w,n in count_img.iteritems()]
+    unique_img = [w for w,n in count_img.items()]
     imgtoi = {w:i+1 for i,w in enumerate(unique_img)} # add one for torch, since torch start from 1.
 
     for i, img in enumerate(imgs):
@@ -166,12 +167,14 @@ def get_unqiue_img(imgs):
             ques_pos_tmp[idx-1] = []
 
         ques_pos_tmp[idx-1].append(i+1)
-    
+
+    max_ques = max(len(ques_list) for ques_list in ques_pos_tmp.values())
+
     img_N = len(ques_pos_tmp)
-    ques_pos = np.zeros((img_N,3), dtype='uint32')
+    ques_pos = np.zeros((img_N, max_ques), dtype='uint32')
     ques_pos_len = np.zeros(img_N, dtype='uint32')
 
-    for idx, ques_list in ques_pos_tmp.iteritems():
+    for idx, ques_list in ques_pos_tmp.items():
         ques_pos_len[idx] = len(ques_list)
         for j in range(len(ques_list)):
             ques_pos[idx][j] = ques_list[j]
